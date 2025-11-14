@@ -412,7 +412,7 @@ function setup() {
   video.hide();
 
   cameraBorder = loadImage('camera_border.png');
-  putsorter = loadImage('put_sorter.png');
+  // putsorter = loadImage('put_sorter.png');
   group = loadImage('Group 61.png');
 
   loadModel = new Clickable();
@@ -450,6 +450,14 @@ function setup() {
       }, 3000);
     }
   }
+
+  // Change cursor when hovering over the Clickable
+  loadModel.onHover = () => {
+    cursor(HAND);
+  };
+  loadModel.onOutside = () => {
+    cursor(ARROW);
+  };
 
   leftGrid = new PhotoGrid(true);
   pencil = loadImage('pencil_icon.png');
@@ -493,6 +501,8 @@ function setup() {
   connect.style('font-size', '18px');
   connect.style('width', '200px');
   connect.style('color', '#1967D2');
+  // show pointer cursor for this HTML button
+  connect.style('cursor', 'pointer');
   leftAdd = debounce(() => {
     leftGrid.addImage(selectPic)
   }, 500, true);
@@ -500,15 +510,15 @@ function setup() {
     rightGrid.addImage(selectPic)
   }, 500, true);
 
-  editCode = createA('https://editor.p5js.org/gbose/sketches/2BN5HQYNK', 'EDIT CODE', '_blank');
-  editCode.position(width - 110, height - 40);
-  editCode.style('height', '40px');
-  editCode.style('border-width', '0px');
-  editCode.style('background-color', bgColor);
-  editCode.style('font-family', 'Poppins');
-  editCode.style('font-size', '18px');
-  editCode.style('width', '200px');
-  editCode.style('color', '#1967D2');
+  // editCode = createA('https://editor.p5js.org/gbose/sketches/2BN5HQYNK', 'EDIT CODE', '_blank');
+  // editCode.position(width - 110, height - 40);
+  // editCode.style('height', '40px');
+  // editCode.style('border-width', '0px');
+  // editCode.style('background-color', bgColor);
+  // editCode.style('font-family', 'Poppins');
+  // editCode.style('font-size', '18px');
+  // editCode.style('width', '200px');
+  // editCode.style('color', '#1967D2');
 
   // Start classifying
   if (isModelLoaded) {
@@ -539,7 +549,7 @@ function draw() {
 
       }, 2000);
     }
-    image(putsorter, width / 2 - putsorter.width / 5, 0, putsorter.width / 2.5, putsorter.height / 2.5);
+    // image(putsorter, width / 2 - putsorter.width / 5, 0, putsorter.width / 2.5, putsorter.height / 2.5);
     noStroke();
     textFont(poppinsBold);
       textAlign(CENTER, CENTER);
