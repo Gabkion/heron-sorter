@@ -22,8 +22,8 @@
 
 ### Εγκατάσταση
 
-1. Κατεβάστε το **Arduino IDE** από [εδώ](https://www.arduino.cc/en/software) και εγκαταστήστε το.
-2. Κατεβάστε το αρχείο του arduino sketch `sorter_sketch.ino` και την βιβλιοθήκη WebUSB από [εδώ](https://github.com/webusb/arduino/archive/gh-pages.zip).
+1. Κατεβάστε το **Arduino IDE** από <a href="https://www.arduino.cc/en/software" target="_blank">εδώ</a> και εγκαταστήστε το.
+2. Κατεβάστε το αρχείο του arduino sketch `sorter_sketch.ino` και την βιβλιοθήκη WebUSB από <a href="https://github.com/webusb/arduino/archive/gh-pages.zip" target="_blank">εδώ</a>.
 
 >[!CAUTION]
 > Πριν συνδέσετε το Arduino Leonardo στον υπολογιστή σας, πρέπει να ακολουθήσετε την παρακάτω διαδικασία για να αναβαθμίσετε το USB του Arduino IDE από 2.0 σε 2.1:
@@ -44,7 +44,7 @@
 ### Εκπαίδευση Μοντέλου
 
 1. Τοποθετείστε την κάμερα σε σταθερή θέση ώστε να βλέπει τα δημητριακά που θα ταξινομήσετε.
-2. Πατήστε [εδώ](https://teachablemachine.withgoogle.com/train/image) για να δημιουργήσετε ένα νέο μοντέλο εικόνας στο Teachable Machine.
+2. Πατήστε <a href="https://teachablemachine.withgoogle.com/train/image" target="_blank">εδώ</a> για να δημιουργήσετε ένα νέο μοντέλο εικόνας στο Teachable Machine.
 3. Προσθέστε στην πρώτη κατηγορία (Class 1) εικόνες του πρώτου τύπου δημητριακών και στη δεύτερη κατηγορία (Class 2) εικόνες του δεύτερου τύπου δημητριακών μέσω της κάμερας.
 4. Προσθέστε σε νέα κατηγορία (Class 3) εικόνες από τον κενό χώρο (χωρίς δημητριακά).
 
@@ -58,7 +58,7 @@
 
 ### Τελική Σύνδεση
 
-1. Μεταβείτε [εδώ](https://gabkion.github.io/heron-sorter/).
+1. Μεταβείτε <a href="https://gabkion.github.io/heron-sorter/" target="_blank">εδώ</a>.
 2. Επικολλήστε το URL του μοντέλου στο πεδίο **Paste your model URL**.
 3. Συνδέστε το Arduino στον υπολογιστή σας και πατήστε το κουμπί **Connect Arduino** στην ιστοσελίδα. Θα εμφανιστεί ένας επιλογέας συσκευών USB, επιλέξτε το Arduino Leonardo σας.
 
