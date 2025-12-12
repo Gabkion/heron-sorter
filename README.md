@@ -58,7 +58,7 @@
 
 ### Τελική Σύνδεση
 
-1. Μεταβείτε [εδώ](https://gabkion.github.io/heron_sorter/).
+1. Μεταβείτε [εδώ](https://gabkion.github.io/heron-sorter/).
 2. Επικολλήστε το URL του μοντέλου στο πεδίο **Paste your model URL**.
 3. Συνδέστε το Arduino στον υπολογιστή σας και πατήστε το κουμπί **Connect Arduino** στην ιστοσελίδα. Θα εμφανιστεί ένας επιλογέας συσκευών USB, επιλέξτε το Arduino Leonardo σας.
 
