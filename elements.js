@@ -1,18 +1,25 @@
 class PhotoGrid {
   constructor(isLeft) {
     this.images = [];
-    console.log(this.images.length);
-    if (isLeft) {
-      this.x = width / 2 - 480;
-    } else {
-      this.x = width / 2 + 300;
-    }
-
-    this.y = height / 2.5;
     this.numRows = 3;
-    this.numCols = 2;
-    this.imageSize = 120;
-    this.padding = 20;
+    this.numCols = 3;
+    this.imageSize = 90;
+    this.padding = 15;
+    this.isLeft = isLeft;
+    
+    // Calculate total grid dimensions
+    this.gridWidth = this.numCols * (this.imageSize + this.padding) - this.padding;
+    this.gridHeight = this.numRows * (this.imageSize + this.padding) - this.padding;
+    
+    // Center grids around the video position
+    // Video is at width/2 - videoSize/2, so we position grids relative to that
+    if (isLeft) {
+      this.x = width / 2 - 125 - this.gridWidth - 50; // Left of video
+    } else {
+      this.x = width / 2 + 125 + 50; // Right of video
+    }
+    
+    this.y = height / 1.6 - this.gridHeight / 2;
   }
 
   addImage(img) {
@@ -25,8 +32,8 @@ class PhotoGrid {
   render() {
     for (let i = 0; i < this.images.length; i++) {
       let currImage = this.images[i];
-      let row = i % 3;
-      let col = int(i / 3);
+      let row = Math.floor(i / this.numCols);
+      let col = i % this.numCols;
       fill(255);
       noStroke();
       rectMode(CORNER);
@@ -130,7 +137,7 @@ class ClassificationBar {
 
     let view = new Uint8Array(1);
 
-    if (class1[0].confidence > 0.90) {
+    if (class1[0].confidence > confidenceThreshold) {
       view[0] = 1;
       try {
         port.send(view);
@@ -140,7 +147,7 @@ class ClassificationBar {
       } catch (e) {
         console.error(e);
       }
-    } else if (class2[0].confidence > 0.90) {
+    } else if (class2[0].confidence > confidenceThreshold) {
       view[0] = 2;
       try {
         port.send(view);
@@ -162,10 +169,39 @@ class ClassificationBar {
     fill('#1967d2');
     rect(this.x + this.classificationLeft / 2, this.y, this.classificationLeft, this.height, this.radius, this.radius, this.radius, this.radius);
     rect(this.x - this.classificationRight / 2, this.y, this.classificationRight, this.height, this.radius, this.radius, this.radius, this.radius);
+    
+    // Center divider
     stroke(0);
     strokeWeight(7);
     strokeCap(ROUND);
     line(this.x, this.y - this.height / 2, this.x, this.y + this.height / 2);
+    
+    // Threshold markers (subtle diamond indicators)
+    let thresholdWidth = map(confidenceThreshold, 0, 1, 0, this.classificationMaxWidth);
+    noStroke();
+    fill('#1966d29e');
+    
+    // Right diamond
+    push();
+    translate(this.x + thresholdWidth, this.y);
+    rotate(PI / 4);
+    rect(0, 0, 8, 8);
+    pop();
+    
+    // Left diamond
+    push();
+    translate(this.x - thresholdWidth, this.y);
+    rotate(PI / 4);
+    rect(0, 0, 8, 8);
+    pop();
+    
+    // Threshold label
+    noStroke();
+    fill(100);
+    textFont(poppinsRegular);
+    textSize(11);
+    textAlign(CENTER, TOP);
+    text('Threshold: ' + Math.round(confidenceThreshold * 100) + '%', this.x, this.y + this.height / 2 + 15);
   }
 }
 

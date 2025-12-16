@@ -91,6 +91,8 @@ let loadModel;
 let labels = [];
 let isLeftClassSelected = false;
 let isRightClassSelected = false;
+let confidenceThreshold = 0.90;
+let confidenceSlider;
 
 // Throttling / cooldown globals
 let lastSendTime = 0;
@@ -202,6 +204,55 @@ function setup() {
   instructionsBtn.mousePressed(() => {
     window.open('https://github.com/Gabkion/heron-sorter#readme', '_blank');
   });
+  
+  // Confidence threshold slider
+  confidenceSlider = createSlider(50, 99, 90, 1);
+  confidenceSlider.position(width / 2 - 125, height / 3.3 + 50);
+  confidenceSlider.style('width', '250px');
+  confidenceSlider.input(() => {
+    confidenceThreshold = confidenceSlider.value() / 100;
+    updateSliderGradient();
+  });
+  
+  // Add custom slider styling
+  let style = document.createElement('style');
+  style.innerHTML = `
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 8px;
+      background: linear-gradient(to right, #1967d2 0%, #1967d2 ${(90-50)/(99-50)*100}%, #d2e3fc ${(90-50)/(99-50)*100}%, #d2e3fc 100%);
+      border-radius: 4px;
+      outline: none;
+      opacity: 0.9;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      background: #1967d2;
+      border: 3px solid white;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      background: #1967d2;
+      border: 3px solid white;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+  `;
+  document.head.appendChild(style);
+  
+  function updateSliderGradient() {
+    let percent = (confidenceSlider.value() - 50) / (99 - 50) * 100;
+    confidenceSlider.elt.style.background = `linear-gradient(to right, #1967d2 0%, #1967d2 ${percent}%, #d2e3fc ${percent}%, #d2e3fc 100%)`;
+  }
   
   leftAdd = debounce(() => {
     leftGrid.addImage(selectPic);

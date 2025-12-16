@@ -23,7 +23,8 @@
 ### Εγκατάσταση
 
 1. Κατεβάστε το **Arduino IDE** από <a href="https://www.arduino.cc/en/software" target="_blank">εδώ</a> και εγκαταστήστε το.
-2. Κατεβάστε το αρχείο του arduino sketch `sorter_sketch.ino` και την βιβλιοθήκη WebUSB από <a href="https://github.com/webusb/arduino/archive/gh-pages.zip" target="_blank">εδώ</a>.
+2. Κατεβάστε το αρχείο του arduino sketch `sorter_sketch.ino` από αυτό το αποθετήριο.
+3. Κατεβάστε την βιβλιοθήκη WebUSB από <a href="https://imisathena-my.sharepoint.com/:f:/g/personal/g_ioannidis_athenarc_gr/IgDMbQzde0juQYmEiNdNBXrmAe89mBpt6dilZemMRd8XqU8?e=Rkehce" target="_blank">εδώ</a> (το αρχείο ZIP).
 
 >[!CAUTION]
 > Πριν συνδέσετε το Arduino Leonardo στον υπολογιστή σας, πρέπει να ακολουθήσετε την παρακάτω διαδικασία για να αναβαθμίσετε το USB του Arduino IDE από 2.0 σε 2.1:
