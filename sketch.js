@@ -59,6 +59,14 @@ class StyledButton {
   id(idName) {
     this.button.id(idName);
   }
+
+  attribute(attr, val) {
+    this.button.attribute(attr, val);
+  }
+
+  style(prop, val) {
+    this.button.style(prop, val);
+  }
 }
 
 let classifier;
@@ -86,8 +94,11 @@ let pencil;
 let bgColor = '#e8f0fe';
 let port;
 let shouldFreezeFrame;
-let modeInput;
+let modelInput;
 let loadModel;
+let uploadZipBtn;
+let zipFileInput;
+let classifyTimeout = null;
 let labels = [];
 let isLeftClassSelected = false;
 let isRightClassSelected = false;
@@ -124,29 +135,8 @@ function setup() {
   cameraBorder = loadImage('./assets/camera_border.png');
 
   loadModel = new StyledButton('LOAD MODEL', 297, 20, 155, 45);
-  loadModel.mousePressed(() => {
-    try {
-      console.log(enteredText + 'metadata.json');
-      classifier = ml5.imageClassifier(enteredText + 'model.json');
-
-      httpGet(enteredText + 'metadata.json', 'json', false, (response) => {
-        if (response.labels.length <= 2) {
-          alert("Train a model with at least three classes: one for each type of object you want to sort, and one for the empty sorter");
-        } else {
-          labels = response.labels;
-          isModelLoaded = true;
-          loadModel.html('MODEL LOADED');
-          setTimeout(() => {
-            loadModel.html('REFRESH MODEL');
-          }, 3000);
-          classifyVideo();
-        }
-
-      }, (error) => alert("invalid TM2 url"));
-    } catch (e) {
-      loadModel.html('INVALID URL');
-    }
-  });
+  loadModel.mousePressed(loadUrlModel);
+  loadModel.button.elt.addEventListener('click', loadUrlModel);
 
   leftGrid = new PhotoGrid(true);
   pencil = loadImage('./assets/pencil_icon.png');
@@ -188,6 +178,66 @@ function setup() {
   modelInput.elt.addEventListener('blur', () => {
     modelInput.elt.style.backgroundColor = 'white';
     modelInput.elt.style.boxShadow = 'none';
+  });
+
+  uploadZipBtn = new StyledButton('UPLOAD MODEL (.ZIP)', 20, 75, 267, 45);
+  uploadZipBtn.attribute('title', 'Upload a Teachable Machine model export (.zip)');
+
+  zipFileInput = document.createElement('input');
+  zipFileInput.type = 'file';
+  zipFileInput.accept = '.zip,application/zip,application/x-zip-compressed';
+  zipFileInput.style.display = 'none';
+  document.body.appendChild(zipFileInput);
+
+  zipFileInput.addEventListener('change', (e) => {
+    if (e.target.files && e.target.files[0]) {
+      handleZipFile(e.target.files[0]);
+    }
+  });
+
+  uploadZipBtn.mousePressed(() => {
+    zipFileInput.click();
+  });
+  uploadZipBtn.button.elt.addEventListener('click', () => {
+    zipFileInput.click();
+  });
+
+  modelInput.elt.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      loadUrlModel();
+    }
+  });
+
+  ['dragenter', 'dragover'].forEach(eventName => {
+    uploadZipBtn.button.elt.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      uploadZipBtn.button.style('background-color', '#f0f7ff');
+      uploadZipBtn.button.style('box-shadow', '0 2px 8px rgba(25, 103, 210, 0.2)');
+    });
+  });
+
+  ['dragleave', 'drop'].forEach(eventName => {
+    uploadZipBtn.button.elt.addEventListener(eventName, (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      uploadZipBtn.button.style('background-color', '#d2e3fc');
+      uploadZipBtn.button.style('box-shadow', 'none');
+    });
+  });
+
+  uploadZipBtn.button.elt.addEventListener('drop', (e) => {
+    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleZipFile(e.dataTransfer.files[0]);
+    }
+  });
+
+  modelInput.elt.addEventListener('dragover', (e) => e.preventDefault());
+  modelInput.elt.addEventListener('drop', (e) => {
+    e.preventDefault();
+    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleZipFile(e.dataTransfer.files[0]);
+    }
   });
 
 
@@ -278,7 +328,7 @@ function draw() {
       textFont(poppinsBold);
       textAlign(CENTER, TOP);
       textSize(28);
-      text('AI Sorter', width / 2, 90);
+      text('ML Sorter', width / 2, 90);
       
       textFont(poppinsRegular);
       textSize(16);
@@ -340,9 +390,223 @@ function draw() {
   }
 }
 
+function loadUrlModel() {
+  let url = enteredText.trim();
+  if (!url) {
+    alert("Please paste a Teachable Machine model link first.");
+    return;
+  }
+  if (!url.endsWith('/')) {
+    url += '/';
+  }
+
+  // 1. Discard previous ZIP model
+  uploadZipBtn.html('UPLOAD MODEL (.ZIP)');
+  if (zipFileInput) {
+    zipFileInput.value = '';
+  }
+
+  // Dispose old model if present
+  if (classifier && classifier.model && typeof classifier.model.dispose === 'function') {
+    try {
+      classifier.model.dispose();
+    } catch (e) {
+      console.warn('Error disposing old model:', e);
+    }
+  }
+  classifier = null;
+  isModelLoaded = false;
+  clearTimeout(classifyTimeout);
+
+  try {
+    loadModel.html('LOADING...');
+    console.log(url + 'metadata.json');
+    const newClassifier = ml5.imageClassifier(url + 'model.json', () => {
+      httpGet(url + 'metadata.json', 'json', false, (response) => {
+        if (!response.labels || response.labels.length <= 2) {
+          alert("Train a model with at least three classes: one for each type of object you want to sort, and one for the empty sorter");
+          loadModel.html('LOAD MODEL');
+        } else {
+          classifier = newClassifier;
+          labels = response.labels;
+          if (classifier) {
+            classifier.mapStringToIndex = labels;
+          }
+          isModelLoaded = true;
+          loadModel.html('MODEL LOADED');
+          setTimeout(() => {
+            loadModel.html('REFRESH MODEL');
+          }, 3000);
+          classifyVideo();
+        }
+      }, (error) => {
+        alert("Invalid TM2 URL: could not fetch metadata.json");
+        loadModel.html('INVALID URL');
+        setTimeout(() => loadModel.html('LOAD MODEL'), 3000);
+      });
+    });
+  } catch (e) {
+    loadModel.html('INVALID URL');
+    setTimeout(() => loadModel.html('LOAD MODEL'), 3000);
+  }
+}
+
+async function handleZipFile(file) {
+  if (!file) return;
+  if (!file.name.toLowerCase().endsWith('.zip')) {
+    alert('Please select a .zip file exported from Teachable Machine.');
+    return;
+  }
+
+  // 1. Discard previous URL model
+  modelInput.value('');
+  enteredText = '';
+  loadModel.html('LOAD MODEL');
+
+  // Dispose old model if present
+  if (classifier && classifier.model && typeof classifier.model.dispose === 'function') {
+    try {
+      classifier.model.dispose();
+    } catch (e) {
+      console.warn('Error disposing old model:', e);
+    }
+  }
+  classifier = null;
+  isModelLoaded = false;
+  clearTimeout(classifyTimeout);
+
+  uploadZipBtn.html('LOADING ZIP...');
+
+  try {
+    if (typeof JSZip === 'undefined') {
+      throw new Error('JSZip library is not loaded');
+    }
+
+    const zip = await JSZip.loadAsync(file);
+
+    let modelEntry = null;
+    let metadataEntry = null;
+    let weightsEntry = null;
+
+    zip.forEach((relPath, entry) => {
+      if (entry.dir) return;
+      if (relPath.includes('__MACOSX') || relPath.startsWith('.')) return;
+
+      const lower = relPath.toLowerCase();
+      if (lower.endsWith('model.json')) {
+        modelEntry = entry;
+      } else if (lower.endsWith('metadata.json')) {
+        metadataEntry = entry;
+      } else if (lower.endsWith('.bin')) {
+        weightsEntry = entry;
+      }
+    });
+
+    if (!modelEntry || !metadataEntry || !weightsEntry) {
+      throw new Error('ZIP file must contain model.json, metadata.json, and weights.bin');
+    }
+
+    const metadataText = await metadataEntry.async('text');
+    let metadata;
+    try {
+      metadata = JSON.parse(metadataText);
+    } catch (e) {
+      throw new Error('Failed to parse metadata.json in ZIP file');
+    }
+
+    if (!metadata.labels || metadata.labels.length <= 2) {
+      alert("Train a model with at least three classes: one for each type of object you want to sort, and one for the empty sorter");
+      uploadZipBtn.html('UPLOAD MODEL (.ZIP)');
+      return;
+    }
+
+    const modelJsonText = await modelEntry.async('text');
+    let modelJson;
+    try {
+      modelJson = JSON.parse(modelJsonText);
+    } catch (e) {
+      throw new Error('Failed to parse model.json in ZIP file');
+    }
+
+    let weightFileName = 'weights.bin';
+    if (modelJson.weightsManifest && modelJson.weightsManifest[0] && modelJson.weightsManifest[0].paths) {
+      weightFileName = modelJson.weightsManifest[0].paths[0] || 'weights.bin';
+    }
+
+    const weightsBuffer = await weightsEntry.async('arraybuffer');
+    const modelFile = new File([modelJsonText], 'model.json', { type: 'application/json' });
+    const weightsFile = new File([weightsBuffer], weightFileName, { type: 'application/octet-stream' });
+
+    const tf = ml5.tf;
+    if (!tf || !tf.loadLayersModel || !tf.io || !tf.io.browserFiles) {
+      throw new Error('TensorFlow.js is not available via ml5');
+    }
+
+    const loadedModel = await tf.loadLayersModel(tf.io.browserFiles([modelFile, weightsFile]));
+
+    labels = metadata.labels;
+    classifier = {
+      model: loadedModel,
+      mapStringToIndex: labels,
+      classify: function(videoInput, callback) {
+        try {
+          const elt = videoInput.elt || videoInput;
+          if (!elt || (elt instanceof HTMLVideoElement && (elt.readyState < 2 || elt.videoWidth === 0))) {
+            if (typeof callback === 'function') callback(null, []);
+            return;
+          }
+          const targetSize = [224, 224];
+          const rawPredictions = tf.tidy(() => {
+            const img = tf.browser.fromPixels(elt);
+            const minDim = Math.min(img.shape[0], img.shape[1]);
+            const startY = Math.floor((img.shape[0] - minDim) / 2);
+            const startX = Math.floor((img.shape[1] - minDim) / 2);
+            const cropped = img.slice([startY, startX, 0], [minDim, minDim, 3]);
+            const resized = tf.image.resizeBilinear(cropped, targetSize);
+            const normalized = resized.expandDims(0).toFloat().div(tf.scalar(127)).sub(tf.scalar(1));
+            const pred = loadedModel.predict(normalized);
+            return Array.from(pred.as1D().dataSync());
+          });
+
+          const results = rawPredictions.map((conf, i) => ({
+            label: labels[i] !== undefined ? labels[i] : String(i),
+            confidence: conf
+          })).sort((a, b) => b.confidence - a.confidence);
+
+          if (typeof callback === 'function') callback(null, results);
+        } catch (err) {
+          if (typeof callback === 'function') callback(err, null);
+        }
+      }
+    };
+
+    isModelLoaded = true;
+    uploadZipBtn.html('ZIP MODEL LOADED');
+    setTimeout(() => {
+      uploadZipBtn.html('REFRESH ZIP MODEL');
+    }, 3000);
+    classifyVideo();
+  } catch (err) {
+    console.error('Error loading ZIP model:', err);
+    alert('Failed to load ZIP model: ' + err.message);
+    uploadZipBtn.html('INVALID ZIP');
+    setTimeout(() => {
+      uploadZipBtn.html('UPLOAD MODEL (.ZIP)');
+    }, 3000);
+  } finally {
+    if (zipFileInput) {
+      zipFileInput.value = '';
+    }
+  }
+}
+
 function classifyVideo() {
+  clearTimeout(classifyTimeout);
+  if (!isModelLoaded || !classifier) {
+    return;
+  }
   if (shouldFreezeFrame) {
-    setTimeout(classifyVideo, classifyIntervalMs);
+    classifyTimeout = setTimeout(classifyVideo, classifyIntervalMs);
     return;
   }
   classifier.classify(video, gotResult);
@@ -351,12 +615,17 @@ function classifyVideo() {
 function gotResult(error, results) {
   if (error) {
     console.error(error);
+    clearTimeout(classifyTimeout);
+    classifyTimeout = setTimeout(classifyVideo, classifyIntervalMs);
     return;
   }
   
-  classificationIndicator.updateClassification(results);
-  label = results[0].label;
-  setTimeout(classifyVideo, classifyIntervalMs);
+  if (results && results.length > 0) {
+    classificationIndicator.updateClassification(results);
+    label = results[0].label;
+  }
+  clearTimeout(classifyTimeout);
+  classifyTimeout = setTimeout(classifyVideo, classifyIntervalMs);
 }
 
 function mousePressed() {

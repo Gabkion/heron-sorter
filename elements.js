@@ -120,24 +120,20 @@ class ClassificationBar {
   }
 
   updateClassification(results) {
-    const class1 = results.filter(objs => {
-      if (objs.label === labels[0]) {
-        return objs;
-      }
-    });
+    if (!results || results.length === 0 || !labels || labels.length < 2) return;
 
-    const class2 = results.filter(objs => {
-      if (objs.label === labels[1]) {
-        return objs;
-      }
-    });
+    const class1 = results.find(objs => objs.label === labels[0]);
+    const class2 = results.find(objs => objs.label === labels[1]);
 
-    this.classificationLeft = map(class1[0].confidence, 0, 1.0, 0, this.classificationMaxWidth);
-    this.classificationRight = map(class2[0].confidence, 0, 1.0, 0, this.classificationMaxWidth);
+    const conf1 = class1 ? class1.confidence : 0;
+    const conf2 = class2 ? class2.confidence : 0;
+
+    this.classificationLeft = map(conf1, 0, 1.0, 0, this.classificationMaxWidth);
+    this.classificationRight = map(conf2, 0, 1.0, 0, this.classificationMaxWidth);
 
     let view = new Uint8Array(1);
 
-    if (class1[0].confidence > confidenceThreshold) {
+    if (conf1 > confidenceThreshold) {
       view[0] = 1;
       try {
         Promise.resolve(port.send(view)).catch(console.error);
@@ -147,7 +143,7 @@ class ClassificationBar {
       } catch (e) {
         console.error(e);
       }
-    } else if (class2[0].confidence > confidenceThreshold) {
+    } else if (conf2 > confidenceThreshold) {
       view[0] = 2;
       try {
         Promise.resolve(port.send(view)).catch(console.error);
@@ -242,6 +238,9 @@ class ClassInput {
           labels[0] = newLabel.trim();
         } else {
           labels[1] = newLabel.trim();
+        }
+        if (typeof classifier !== 'undefined' && classifier && classifier.mapStringToIndex) {
+          classifier.mapStringToIndex = labels;
         }
       }
     }

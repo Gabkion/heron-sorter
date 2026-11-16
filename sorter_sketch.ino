@@ -1,6 +1,11 @@
 #include <Servo.h>
 
 #define SERVO_PIN 9
+
+#define MIDDLE_POS 60
+#define LEFT_POS 0
+#define RIGHT_POS 180
+
 Servo myservo;
 
 int pos = 0;  // variable to store the servo position
@@ -11,7 +16,7 @@ int colorIndex;
 void setup() {
   colorIndex = 0;
   myservo.attach(SERVO_PIN);
-  myservo.write(60);
+  myservo.write(MIDDLE_POS);
 
   Serial.begin(9600);
   while (!Serial) {
@@ -27,9 +32,9 @@ void loop() {
     color[colorIndex++] = Serial.read();
     if (colorIndex == 1) {
       if (color[0] == 1) {
-        myservo.write(0);
+        myservo.write(LEFT_POS);
         delay(2000);
-        for (pos = 0; pos <= 60; pos += 1) {
+        for (pos = LEFT_POS; pos <= MIDDLE_POS; pos += 1) {
           myservo.write(pos);  // tell servo to go to position in variable 'pos'
           delay(5);            // waits 15ms for the servo to reach the position
         }
@@ -38,9 +43,9 @@ void loop() {
       }
 
       else if (color[0] == 2) {
-        myservo.write(180);
+        myservo.write(RIGHT_POS);
         delay(2000);
-        for (pos = 180; pos >= 60; pos -= 1) {
+        for (pos = RIGHT_POS; pos >= MIDDLE_POS; pos -= 1) {
           myservo.write(pos);  // tell servo to go to position in variable 'pos'
           delay(5);            // waits 15ms for the servo to reach the position
         }
