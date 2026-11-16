@@ -15,13 +15,55 @@ function waitForElement(selector, callback) {
     console.log("connectButton: ", connectButton);
     let isBusy = false;
 
+    const popupEl = document.getElementById('serial-popup');
+    const popupTitleEl = document.getElementById('serial-popup-title');
+    const popupMessageEl = document.getElementById('serial-popup-message');
+    const popupCloseBtn = document.getElementById('serial-popup-close');
+
+    function hideConnectionPopup() {
+      if (popupEl) {
+        popupEl.classList.add('hidden');
+      }
+    }
+
+    function showConnectionPopup(title, message) {
+      if (!popupEl || !popupTitleEl || !popupMessageEl) {
+        alert(title + ': ' + message);
+        return;
+      }
+      popupTitleEl.textContent = title;
+      popupMessageEl.textContent = message;
+      popupEl.classList.remove('hidden');
+      if (popupCloseBtn) {
+        popupCloseBtn.focus();
+      }
+    }
+
+    if (popupCloseBtn) {
+      popupCloseBtn.addEventListener('click', hideConnectionPopup);
+    }
+    if (popupEl) {
+      popupEl.addEventListener('click', (event) => {
+        if (event.target === popupEl) {
+          hideConnectionPopup();
+        }
+      });
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !popupEl.classList.contains('hidden')) {
+          hideConnectionPopup();
+        }
+      });
+    }
+
     function resetButton() {
-      connectButton.textContent = 'CONNECT ARDUINO';
+      connectButton.textContent = 'Connect Arduino';
+      connectButton.classList.remove('connected');
     }
 
     function connect() {
       return port.connect().then(() => {
-        connectButton.textContent = 'DISCONNECT';
+        connectButton.textContent = 'Disconnect';
+        connectButton.classList.add('connected');
 
         const textDecoder = new TextDecoder();
         port.onReceive = data => {
@@ -33,7 +75,11 @@ function waitForElement(selector, callback) {
         };
       }).catch(error => {
         console.error(error);
-        alert('Could not connect to Arduino: ' + error.message + '\n\nMake sure no other program (such as Arduino IDE Serial Monitor) is using the port.');
+        const errorMessage = (error && error.message) ? error.message : String(error || 'Unknown error');
+        showConnectionPopup(
+          'Could not connect to Arduino',
+          errorMessage + '\n\nMake sure no other program (such as Arduino IDE Serial Monitor) is using the port.'
+        );
         port = null;
         resetButton();
       });

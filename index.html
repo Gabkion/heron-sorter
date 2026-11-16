@@ -21,15 +21,15 @@
       <div class="model-controls">
         <div class="url-row">
           <input id="model-url" class="model-input" type="text" placeholder="Paste model link here" />
-          <button id="load-model-btn" class="btn load-btn" type="button">LOAD MODEL</button>
+          <button id="load-model-btn" class="btn load-btn" type="button">Load Model</button>
         </div>
         <button id="upload-zip-btn" class="btn upload-btn" type="button" title="Upload a Teachable Machine model export (.zip)">
-          UPLOAD MODEL (.ZIP)
+          Upload Model (.ZIP)
         </button>
         <input id="zip-file-input" type="file" accept=".zip,application/zip,application/x-zip-compressed" hidden />
       </div>
 
-      <button id="connect" class="btn connect-btn" type="button">CONNECT ARDUINO</button>
+      <button id="connect" class="btn connect-btn" type="button">Connect Arduino</button>
     </header>
 
     <main class="main-content">
@@ -78,7 +78,17 @@
       </section>
     </main>
 
-    <button id="instructions-btn" class="btn instructions-btn" type="button">INSTRUCTIONS</button>
+    <button id="instructions-btn" class="btn instructions-btn" type="button">Instructions</button>
+  </div>
+
+  <div id="serial-popup" class="popup-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="serial-popup-title" aria-describedby="serial-popup-message">
+    <div class="popup-card">
+      <h2 id="serial-popup-title" class="popup-title">Could not connect to Arduino</h2>
+      <p id="serial-popup-message" class="popup-message"></p>
+      <div class="popup-actions">
+        <button id="serial-popup-close" class="btn popup-close-btn" type="button">OK</button>
+      </div>
+    </div>
   </div>
 
   <script src="serial.js"></script>
