@@ -24,23 +24,10 @@
 
 1. Κατεβάστε το **Arduino IDE** από <a href="https://www.arduino.cc/en/software" target="_blank">εδώ</a> και εγκαταστήστε το.
 2. Κατεβάστε το αρχείο του arduino sketch `sorter_sketch.ino` από αυτό το αποθετήριο.
-3. Κατεβάστε την βιβλιοθήκη WebUSB από <a href="https://imisathena-my.sharepoint.com/:f:/g/personal/g_ioannidis_athenarc_gr/IgDMbQzde0juQYmEiNdNBXrmAe89mBpt6dilZemMRd8XqU8?e=Rkehce" target="_blank">εδώ</a> (το αρχείο ZIP).
-
->[!CAUTION]
-> Πριν συνδέσετε το Arduino Leonardo στον υπολογιστή σας, πρέπει να ακολουθήσετε την παρακάτω διαδικασία για να αναβαθμίσετε το USB του Arduino IDE από 2.0 σε 2.1:
->
-> 3. Ανοίξτε τον φάκελο της εγκατάστασης του Arduino IDE στον υπολογιστή σας.
-> 4. Ακολουθήστε τη διαδρομή: `hardware/arduino/avr/cores/arduino/`
-> 5. Βρείτε και ανοίξτε το αρχείο `USBCore.h` με έναν επεξεργαστή κειμένου (π.χ. Notepad).
-> 6. Αναζητήστε τη γραμμή `#define USB_VERSION 0x200`
-> 7. Αλλάξτε `0x200` σε `0x210`
-> 8. Αποθηκεύστε το αρχείο.
-
-9. Ανοίξτε το αρχείο `sorter_sketch.ino`.
-10. Προσθέστε τη βιβλιοθήκη WebUSB στο Arduino IDE πηγαίνοντας στο **Sketch > Include Library > Add .ZIP Library...** και επιλέγοντας το αρχείο zip που κατεβάσατε.
-11.  Συνδέστε το Arduino Leonardo στον υπολογιστή σας μέσω USB.
-12. Επιλέξτε την σωστή πλακέτα και θύρα στο Arduino IDE πηγαίνοντας στο **Tools > Board > Arduino Leonardo** και **Tools > Port**.
-13. Ανεβάστε τον κώδικα στο Arduino πατώντας το κουμπί **Upload**.
+3. Ανοίξτε το αρχείο `sorter_sketch.ino`.
+4. Συνδέστε το Arduino στον υπολογιστή σας μέσω USB.
+5. Επιλέξτε την σωστή πλακέτα και θύρα στο Arduino IDE πηγαίνοντας στο **Tools > Board** (π.χ. Arduino Leonardo ή Arduino Uno) και **Tools > Port**.
+6. Ανεβάστε τον κώδικα στο Arduino πατώντας το κουμπί **Upload**.
 
 ### Εκπαίδευση Μοντέλου
 
@@ -61,7 +48,7 @@
 
 1. Μεταβείτε <a href="https://gabkion.github.io/heron-sorter/" target="_blank">εδώ</a>.
 2. Επικολλήστε το URL του μοντέλου στο πεδίο **Paste your model URL**.
-3. Συνδέστε το Arduino στον υπολογιστή σας και πατήστε το κουμπί **Connect Arduino** στην ιστοσελίδα. Θα εμφανιστεί ένας επιλογέας συσκευών USB, επιλέξτε το Arduino Leonardo σας.
+3. Συνδέστε το Arduino στον υπολογιστή σας και πατήστε το κουμπί **Connect Arduino** στην ιστοσελίδα (χρησιμοποιήστε Chrome, Edge ή Opera). Θα εμφανιστεί ένας επιλογέας σειριακών θυρών (Serial Port), επιλέξτε τη θύρα του Arduino σας.
 
 Είστε έτοιμοι!
 

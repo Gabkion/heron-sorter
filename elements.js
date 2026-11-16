@@ -140,7 +140,7 @@ class ClassificationBar {
     if (class1[0].confidence > confidenceThreshold) {
       view[0] = 1;
       try {
-        port.send(view);
+        Promise.resolve(port.send(view)).catch(console.error);
         shouldFreezeFrame = true;
         splashLeft.trigger();
         isLeftPic = false;
@@ -150,7 +150,7 @@ class ClassificationBar {
     } else if (class2[0].confidence > confidenceThreshold) {
       view[0] = 2;
       try {
-        port.send(view);
+        Promise.resolve(port.send(view)).catch(console.error);
         shouldFreezeFrame = true;
         splashRight.trigger();
         isLeftPic = true;

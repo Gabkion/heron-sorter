@@ -1,9 +1,5 @@
-#include <WebUSB.h>
 #include <Servo.h>
 
-WebUSB WebUSBSerial(1 /* https:// */, "gabkion.github.io/heron-sorter/");
-
-#define Serial WebUSBSerial
 #define SERVO_PIN 9
 Servo myservo;
 
@@ -13,15 +9,16 @@ int color[3];
 int colorIndex;
 
 void setup() {
-  while (!Serial) {
-    ;
-  }
-  Serial.begin(9600);
-  Serial.write("Sketch begins.\r\n");
-  Serial.flush();
   colorIndex = 0;
   myservo.attach(SERVO_PIN);
   myservo.write(60);
+
+  Serial.begin(9600);
+  while (!Serial) {
+    ;
+  }
+  Serial.write("Sketch begins.\r\n");
+  Serial.flush();
 }
 
 void loop() {
