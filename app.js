@@ -8,6 +8,7 @@ var port = null;
   const loadModelBtn = document.getElementById('load-model-btn');
   const uploadZipBtn = document.getElementById('upload-zip-btn');
   const zipFileInput = document.getElementById('zip-file-input');
+  const dropOverlay = document.getElementById('drop-overlay');
   const instructionsBtn = document.getElementById('instructions-btn');
 
   const class1Box = document.getElementById('class1-box');
@@ -405,35 +406,59 @@ var port = null;
     }
   });
 
-  ['dragenter', 'dragover'].forEach((eventName) => {
-    uploadZipBtn.addEventListener(eventName, (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      uploadZipBtn.classList.add('drag-active');
-    });
-  });
+  let dragDepth = 0;
 
-  ['dragleave', 'drop'].forEach((eventName) => {
-    uploadZipBtn.addEventListener(eventName, (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      uploadZipBtn.classList.remove('drag-active');
-    });
-  });
+  function isFileDrag(e) {
+    return Boolean(e.dataTransfer && e.dataTransfer.types && Array.from(e.dataTransfer.types).includes('Files'));
+  }
 
-  uploadZipBtn.addEventListener('drop', (e) => {
-    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleZipFile(e.dataTransfer.files[0]);
+  function showDropOverlay() {
+    if (dropOverlay) {
+      dropOverlay.classList.remove('hidden');
     }
-  });
+    uploadZipBtn.classList.add('drag-active');
+  }
 
-  modelUrlInput.addEventListener('dragover', (e) => e.preventDefault());
-  modelUrlInput.addEventListener('drop', (e) => {
+  function hideDropOverlay() {
+    dragDepth = 0;
+    if (dropOverlay) {
+      dropOverlay.classList.add('hidden');
+    }
+    uploadZipBtn.classList.remove('drag-active');
+  }
+
+  window.addEventListener('dragenter', (e) => {
+    if (!isFileDrag(e)) return;
     e.preventDefault();
+    dragDepth += 1;
+    showDropOverlay();
+  });
+
+  window.addEventListener('dragover', (e) => {
+    if (!isFileDrag(e)) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+  });
+
+  window.addEventListener('dragleave', (e) => {
+    if (!isFileDrag(e)) return;
+    dragDepth = Math.max(0, dragDepth - 1);
+    if (dragDepth === 0) {
+      hideDropOverlay();
+    }
+  });
+
+  window.addEventListener('drop', (e) => {
+    if (!isFileDrag(e)) return;
+    e.preventDefault();
+    hideDropOverlay();
     if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleZipFile(e.dataTransfer.files[0]);
     }
   });
+
+  window.addEventListener('blur', hideDropOverlay);
+  document.addEventListener('dragend', hideDropOverlay);
 
   confidenceSlider.addEventListener('input', updateThresholdUI);
 
