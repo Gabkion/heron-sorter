@@ -268,6 +268,177 @@ html, body {
   font-size: 13px;
 }
 
+/* Discrete Collapsible Firmware Info Popup (matches servo-workshop format) */
+.firmware-popup {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  width: min(440px, calc(100vw - 180px));
+  z-index: 900;
+  box-shadow: 0 8px 24px rgba(25, 103, 210, 0.14);
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.22s ease, transform 0.22s ease, visibility 0s;
+}
+
+.firmware-popup.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(10px);
+  transition: opacity 0.22s ease, transform 0.22s ease, visibility 0s linear 0.22s;
+}
+
+.info-card {
+  background-color: #f8fbff;
+  border: 1px solid #d2e3fc;
+  border-radius: 8px;
+  padding: 13px 16px 13px 20px;
+}
+
+.info-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.drawer-toggle {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: #5f6368;
+  transition: color 0.2s ease;
+}
+
+.drawer-arrow {
+  flex-shrink: 0;
+  transition: transform 0.25s ease;
+}
+
+.drawer-container.open .drawer-arrow {
+  transform: rotate(180deg);
+}
+
+.drawer-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  margin-top: 0;
+  transition: grid-template-rows 0.25s ease, opacity 0.2s ease, margin-top 0.25s ease;
+}
+
+.drawer-container.open .drawer-body {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  margin-top: 14px;
+}
+
+.drawer-inner {
+  overflow: hidden;
+}
+
+.info-card-heading {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #5f6368;
+  text-align: left;
+  transition: color 0.2s ease;
+}
+
+.info-card-icon {
+  flex-shrink: 0;
+  color: #5f6368;
+  transition: color 0.2s ease;
+}
+
+.info-card .drawer-toggle:hover .info-card-heading,
+.info-card .drawer-toggle:hover .info-card-icon,
+.info-card .drawer-toggle:hover .drawer-arrow,
+.info-card.open .info-card-heading,
+.info-card.open .info-card-icon {
+  color: #1967d2;
+}
+
+.firmware-popup-close {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #5f6368;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.firmware-popup-close:hover {
+  background-color: #e8f0fe;
+  color: #1967d2;
+}
+
+.info-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid #e8f0fe;
+}
+
+.info-card-lead {
+  margin: 0;
+  font-size: 13.5px;
+  color: #3c4043;
+  line-height: 1.5;
+}
+
+.info-card-steps {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13.5px;
+  color: #3c4043;
+  line-height: 1.55;
+}
+
+.info-card-content code {
+  background-color: #f0f7ff;
+  color: #1967d2;
+  padding: 1px 6px;
+  border-radius: 2px;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.info-card-link {
+  color: #1967d2;
+  font-weight: 600;
+  text-decoration: none;
+  border-bottom: 1px solid #bdd4f7;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.info-card-link:hover {
+  color: #1557b0;
+  border-bottom-color: #1967d2;
+}
+
 .main-content {
   flex: 1;
   display: flex;

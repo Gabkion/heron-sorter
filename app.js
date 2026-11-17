@@ -27,6 +27,11 @@ var port = null;
   const rightGrid = document.getElementById('right-grid');
   const videoEl = document.getElementById('webcam');
 
+  const firmwareWarning = document.getElementById('firmware-warning');
+  const firmwareWarningToggle = document.getElementById('firmware-warning-toggle');
+  const firmwareWarningBody = document.getElementById('firmware-warning-body');
+  const firmwareWarningClose = document.getElementById('firmware-warning-close');
+
   const thumbCanvas = document.createElement('canvas');
   thumbCanvas.width = 80;
   thumbCanvas.height = 80;
@@ -39,13 +44,40 @@ var port = null;
   let modelLoadGeneration = 0;
   let confidenceThreshold = 0.90;
 
-  // Throttling / cooldown state
+  // Throttling / cooldown state (longer than Arduino's 3s sort cycle)
   let lastSendTime = 0;
-  const sendCooldownMs = 2000;
+  const sendCooldownMs = 3500;
   const classifyIntervalMs = 400;
   let lastLabel = '';
   let consecutiveCount = 0;
   const requiredConsecutive = 2;
+
+  // Serial confirmation check for detecting wrong/missing Arduino code
+  const serialAckTimeoutMs = 1500;
+  let serialAckTimer = null;
+  let pendingAckClass = null;
+  let firmwareWarningDismissed = false;
+
+  function clearSerialAckTimer() {
+    if (serialAckTimer) {
+      clearTimeout(serialAckTimer);
+      serialAckTimer = null;
+    }
+    pendingAckClass = null;
+  }
+
+  function showFirmwareWarning() {
+    if (!firmwareWarning || firmwareWarningDismissed) return;
+    firmwareWarning.classList.remove('hidden');
+  }
+
+  function hideFirmwareWarning() {
+    if (!firmwareWarning) return;
+    firmwareWarning.classList.add('hidden');
+    firmwareWarning.classList.remove('open');
+    if (firmwareWarningToggle) firmwareWarningToggle.setAttribute('aria-expanded', 'false');
+    if (firmwareWarningBody) firmwareWarningBody.setAttribute('aria-hidden', 'true');
+  }
 
   async function initWebcam() {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -134,6 +166,8 @@ var port = null;
     const gen = ++modelLoadGeneration;
     clearTimeout(classifyTimeout);
     classifyTimeout = null;
+    clearSerialAckTimer();
+    hideFirmwareWarning();
     isModelLoaded = false;
     lastLabel = '';
     consecutiveCount = 0;
@@ -337,10 +371,23 @@ var port = null;
     consecutiveCount = 0;
     lastLabel = '';
 
-    if (port) {
-      const view = new Uint8Array([detectedClass]);
+    if (port && isModelLoaded) {
+      const data = new TextEncoder().encode(String(detectedClass));
+      const sentClass = detectedClass;
       try {
-        Promise.resolve(port.send(view)).catch(console.error);
+        Promise.resolve(port.send(data))
+          .then(() => {
+            if (!port || !isModelLoaded) return;
+            clearSerialAckTimer();
+            pendingAckClass = sentClass;
+            serialAckTimer = setTimeout(() => {
+              serialAckTimer = null;
+              if (port && isModelLoaded && pendingAckClass === sentClass) {
+                showFirmwareWarning();
+              }
+            }, serialAckTimeoutMs);
+          })
+          .catch(console.error);
       } catch (err) {
         console.error(err);
       }
@@ -468,6 +515,42 @@ var port = null;
 
   setupRenameHandler(class1Box, 0);
   setupRenameHandler(class2Box, 1);
+
+  if (firmwareWarning && firmwareWarningToggle && firmwareWarningBody) {
+    firmwareWarningToggle.addEventListener('click', () => {
+      const isOpen = firmwareWarning.classList.toggle('open');
+      firmwareWarningToggle.setAttribute('aria-expanded', String(isOpen));
+      firmwareWarningBody.setAttribute('aria-hidden', String(!isOpen));
+    });
+  }
+
+  if (firmwareWarningClose) {
+    firmwareWarningClose.addEventListener('click', () => {
+      firmwareWarningDismissed = true;
+      hideFirmwareWarning();
+    });
+  }
+
+  window.addEventListener('arduino-serial-line', (event) => {
+    const line = String(event.detail || '').trim().toLowerCase();
+    if (!line) return;
+
+    const expectedLine = pendingAckClass !== null ? `class ${pendingAckClass} detected` : null;
+    if (
+      (expectedLine && line === expectedLine) ||
+      (!expectedLine && (line === 'class 1 detected' || line === 'class 2 detected'))
+    ) {
+      clearSerialAckTimer();
+      firmwareWarningDismissed = false;
+      hideFirmwareWarning();
+    }
+  });
+
+  window.addEventListener('arduino-serial-disconnected', () => {
+    clearSerialAckTimer();
+    firmwareWarningDismissed = false;
+    hideFirmwareWarning();
+  });
 
   updateThresholdUI();
   initWebcam();

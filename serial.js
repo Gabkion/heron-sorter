@@ -66,8 +66,19 @@ function waitForElement(selector, callback) {
         connectButton.classList.add('connected');
 
         const textDecoder = new TextDecoder();
+        let lineBuffer = '';
         port.onReceive = data => {
-          console.log(textDecoder.decode(data, { stream: true }));
+          const chunk = textDecoder.decode(data, { stream: true });
+          console.log(chunk);
+          lineBuffer += chunk;
+          const lines = lineBuffer.split(/\r?\n/);
+          lineBuffer = lines.pop();
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (trimmed) {
+              window.dispatchEvent(new CustomEvent('arduino-serial-line', { detail: trimmed }));
+            }
+          }
         };
 
         port.onReceiveError = error => {
@@ -82,6 +93,7 @@ function waitForElement(selector, callback) {
         );
         port = null;
         resetButton();
+        window.dispatchEvent(new CustomEvent('arduino-serial-disconnected'));
       });
     }
 
@@ -91,6 +103,7 @@ function waitForElement(selector, callback) {
           port.disconnect().finally(() => {
             port = null;
             resetButton();
+            window.dispatchEvent(new CustomEvent('arduino-serial-disconnected'));
           });
         }
       });
@@ -105,6 +118,7 @@ function waitForElement(selector, callback) {
           port.disconnect().finally(() => {
             port = null;
             resetButton();
+            window.dispatchEvent(new CustomEvent('arduino-serial-disconnected'));
             isBusy = false;
           });
         } else {
